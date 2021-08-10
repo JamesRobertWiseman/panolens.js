@@ -6261,6 +6261,7 @@
 	     */
 	    this.noZoom = false;
 	    this.zoomSpeed = 1.0;
+	    this.zoomInverse = false;
 
 	    // Limits to how far you can dolly in and out ( PerspectiveCamera only )
 	    this.minDistance = 0;
@@ -7813,11 +7814,12 @@
 	        if ( event.method && this[ event.method ] ) {
 	            
 	            // Fix for iOS 13+
-	            if (event.method === 'enableControl' && data === 1 && DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') { DeviceOrientationEvent.requestPermission().then((response) => {
-	                if (response === 'granted') {
-	                    this[event.method](event.data);
-	                }
-	            });
+	            if (event.method === 'enableControl' && event.data === 1 && DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') { 
+	                DeviceOrientationEvent.requestPermission().then((response) => {
+	                    if (response === 'granted') {
+	                        this[event.method](event.data);
+	                    }
+	                });
 	            } else {
 	                this[event.method](event.data);
 	            }
