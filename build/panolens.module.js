@@ -55,6 +55,26 @@ const CONTROLS = { ORBIT: 0, DEVICEORIENTATION: 1 };
 const MODES = { UNKNOWN: 0, NORMAL: 1, CARDBOARD: 2, STEREO: 3 };
 
 /**
+ * CONTROL_BUTTONS
+ * @module CONTROL_BUTTONS
+ * @example PANOLENS.VIEWER.CONTROL_BUTTONS
+ * @property {string} FULLSCREEN
+ * @property {string} SETTING
+ * @property {string} VIDEO
+ */
+const CONTROL_BUTTONS = { FULLSCREEN: 'fullscreen', SETTING: 'setting', VIDEO: 'video' };
+
+/**
+ * OUTPUTS
+ * @module OUTPUTS
+ * @example PANOLENS.VIEWER.OUTPUTS
+ * @property {string} NONE
+ * @property {string} CONSOLE
+ * @property {string} OVERLAY
+ */
+const OUTPUTS = { NONE: 'none', CONSOLE: 'console', OVERLAY: 'overlay' };
+
+/**
  * Data URI Images
  * @module DataImage
  * @example PANOLENS.DataImage.Info
@@ -124,12 +144,21 @@ const ImageLoader = {
 
             if (onLoad) {
 
-                setTimeout(function () {
+                if ( cached.complete && cached.src ) {
+                    setTimeout( function () {
 
-                    onProgress({loaded: 1, total: 1});
-                    onLoad(cached);
+                        onProgress( { loaded: 1, total: 1 } );
+                        onLoad( cached );
 
-                }, 0);
+                    }, 0 );
+                } else {
+                    cached.addEventListener( 'load', function () {
+
+                        onProgress( { loaded: 1, total: 1 } );
+                        onLoad( cached );
+
+                    }, false );
+                }
 
             }
 
@@ -163,6 +192,7 @@ const ImageLoader = {
         request = new window.XMLHttpRequest();
         request.open('GET', url, true);
         if (process.env.npm_lifecycle_event !== 'test') {
+            /* istanbul ignore next */
             request.onreadystatechange = function () {
                 if (this.readyState === 4 && this.status >= 400) {
                     onError();
@@ -7777,8 +7807,16 @@ Viewer.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
     eventHandler: function ( event ) {
 
         if ( event.method && this[ event.method ] ) {
-
-            this[ event.method ]( event.data );
+            
+            // Fix for iOS 13+
+            if (event.method === 'enableControl' && data === 1 && DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') { DeviceOrientationEvent.requestPermission().then((response) => {
+                if (response === 'granted') {
+                    this[event.method](event.data);
+                }
+            });
+            } else {
+                this[event.method](event.data);
+            }
 
         }
 
@@ -9560,4 +9598,4 @@ if ( REVISION$1 != THREE_REVISION ) {
  */
 window.TWEEN = Tween;
 
-export { BasicPanorama, CONTROLS, CameraPanorama, CubePanorama, CubeTextureLoader, DataImage, EmptyPanorama, GoogleStreetviewPanorama, ImageLittlePlanet, ImageLoader, ImagePanorama, Infospot, LittlePlanet, MODES, Media, Panorama, REVISION, Reticle, THREE_REVISION, THREE_VERSION, TextureLoader, VERSION, VideoPanorama, Viewer, Widget };
+export { BasicPanorama, CONTROLS, CONTROL_BUTTONS, CameraPanorama, CubePanorama, CubeTextureLoader, DataImage, EmptyPanorama, GoogleStreetviewPanorama, ImageLittlePlanet, ImageLoader, ImagePanorama, Infospot, LittlePlanet, MODES, Media, OUTPUTS, Panorama, REVISION, Reticle, THREE_REVISION, THREE_VERSION, TextureLoader, VERSION, VideoPanorama, Viewer, Widget };
